@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
+using Emignatik.NxFileViewer.Styling.Theme;
 using Emignatik.NxFileViewer.Utils.MVVM;
 using Emignatik.NxFileViewer.Utils.MVVM.Localization;
 using Microsoft.Extensions.Logging;
@@ -17,12 +18,14 @@ public class AppSettings : NotifyPropertyChangedBase, IAppSettings
     private string _titleKeysDownloadUrl = "";
     private bool _alwaysReloadKeysBeforeOpen = false;
 
-    private string _titlePageUrl = "https://tinfoil.media/Title/{TitleId}";
-    private string _titleInfoApiUrl = "https://tinfoil.media/api/title/{TitleId}";
+    private string _titlePageUrl = "https://tinfoil.io/Title/{TitleId}";
+    private string _titleInfoApiUrl = "https://tinfoil.io/api/title/{TitleId}";
     private string _lastUsedDir = "";
     private bool _allowNczBlocklessCompressionOpening = true;
     private bool _acceptMissingDeltaFragments = true;
     private bool _injectTicketKeys = true;
+    private AppTheme _theme = AppTheme.System;
+    private bool _rememberWindowPlacement = true;
 
     public string AppLanguage
     {
@@ -175,6 +178,32 @@ public class AppSettings : NotifyPropertyChangedBase, IAppSettings
         }
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public AppTheme Theme
+    {
+        get => _theme;
+        set
+        {
+            _theme = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    public bool RememberWindowPlacement
+    {
+        get => _rememberWindowPlacement;
+        set
+        {
+            _rememberWindowPlacement = value;
+            NotifyPropertyChanged();
+        }
+    }
+
+    [JsonIgnore]
+    IWindowPlacementSettings IAppSettings.MainWindowPlacement => MainWindowPlacement;
+
+    public WindowPlacementSettings MainWindowPlacement { get; set; } = new();
+
     [JsonIgnore]
     IRenamingOptions IAppSettings.RenamingOptions => RenamingOptions;
 
@@ -309,4 +338,46 @@ public class RenamingOptions : NotifyPropertyChangedBase, IRenamingOptions
         }
     }
 
+}
+
+public class WindowPlacementSettings : NotifyPropertyChangedBase, IWindowPlacementSettings
+{
+    private int _left;
+    private int _top;
+    private int _width;
+    private int _height;
+    private bool _isMaximized;
+
+    public int Left
+    {
+        get => _left;
+        set { _left = value; NotifyPropertyChanged(); }
+    }
+
+    public int Top
+    {
+        get => _top;
+        set { _top = value; NotifyPropertyChanged(); }
+    }
+
+    public int Width
+    {
+        get => _width;
+        set { _width = value; NotifyPropertyChanged(); }
+    }
+
+    public int Height
+    {
+        get => _height;
+        set { _height = value; NotifyPropertyChanged(); }
+    }
+
+    public bool IsMaximized
+    {
+        get => _isMaximized;
+        set { _isMaximized = value; NotifyPropertyChanged(); }
+    }
+
+    [JsonIgnore]
+    public bool IsDefined => _width > 0 && _height > 0;
 }

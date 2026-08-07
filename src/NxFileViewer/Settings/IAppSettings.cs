@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using Emignatik.NxFileViewer.Styling.Theme;
 using Microsoft.Extensions.Logging;
 
 namespace Emignatik.NxFileViewer.Settings;
@@ -10,6 +11,12 @@ public interface IAppSettings : INotifyPropertyChanged
 {
 
     string AppLanguage { get; set; }
+
+    AppTheme Theme { get; set; }
+
+    bool RememberWindowPlacement { get; set; }
+
+    IWindowPlacementSettings MainWindowPlacement { get; }
 
     string LastUsedDir { get; set; }
 
@@ -66,4 +73,23 @@ public interface IRenamingOptions : INotifyPropertyChanged
 
     string WhiteSpaceCharsReplacement { get; set; }
 
+}
+
+/// <summary>
+/// Position and size of the main window, in physical pixels
+/// </summary>
+public interface IWindowPlacementSettings : INotifyPropertyChanged
+{
+    int Left { get; set; }
+
+    int Top { get; set; }
+
+    int Width { get; set; }
+
+    int Height { get; set; }
+
+    bool IsMaximized { get; set; }
+
+    /// <summary>True when a placement has already been saved</summary>
+    bool IsDefined { get; }
 }

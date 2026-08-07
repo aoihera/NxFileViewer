@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emignatik.NxFileViewer.Utils.MVVM.Localization;
 using LibHac.Ncm;
 
@@ -95,6 +95,7 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string SettingsView_CheckBox_AlwaysReloadKeysBeforeOpen => "Keys immer neu laden bevor eine Datei geöffnet wird.";
     public string SettingsView_CheckBox_InjectTicketKeys => "Keys aus Ticket-Dateien (*.tik) injizieren";
     public string SettingsView_Title_Language => "Sprache";
+    public string SettingsView_Title_Theme => "Design";
     public string SettingsView_Title_NczOptions => "NSZ/XCZ Einstellungen";
 
     public string SettingsView_ToolTip_NczBlockLessCompression => """

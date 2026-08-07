@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Emignatik.NxFileViewer.Views.UserControls.CnmtContainerView"
+<UserControl x:Class="Emignatik.NxFileViewer.Views.UserControls.CnmtContainerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -10,6 +10,7 @@
              xmlns:customControls1="clr-namespace:Emignatik.NxFileViewer.Utils.MVVM.CustomControls"
              mc:Ignorable="d"
              Style="{StaticResource UserControlStyle}"
+             Background="{DynamicResource Surface.Static.Background}"
              d:DesignHeight="450" d:DesignWidth="400" d:DataContext="{d:DesignInstance userControls:CnmtContainerViewModel}">
 
     <DockPanel Margin="0">
@@ -97,7 +98,9 @@
                         <customControls:TipLabel ToolTip="{Binding Source={x:Static loc:LocalizationManager.Instance}, Path=Current.Keys.ToolTip_AvailableLanguages}" />
                     </StackPanel>
                     <ListView ItemsSource="{Binding Path=Titles}" VerticalAlignment="Stretch" 
-                              SelectedItem="{Binding Path=SelectedTitle}" MinHeight="150" MinWidth="130" SelectionMode="Single">
+                              SelectedItem="{Binding Path=SelectedTitle}"
+                              Background="{DynamicResource Surface.Static.Background}"
+                              BorderBrush="{DynamicResource Control.Static.Border}" MinHeight="150" MinWidth="130" SelectionMode="Single">
                         <ListView.ItemTemplate>
                             <DataTemplate DataType="overview:TitleInfo">
                                 <TextBlock Text="{Binding Path=Language, Converter={StaticResource NacpLanguageConverter}}" />

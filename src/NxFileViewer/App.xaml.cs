@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -20,6 +20,7 @@ using Emignatik.NxFileViewer.Services.KeysManagement;
 using Emignatik.NxFileViewer.Services.OnlineServices;
 using Emignatik.NxFileViewer.Services.Prompting;
 using Emignatik.NxFileViewer.Services.Selection;
+using Emignatik.NxFileViewer.Services.WindowPlacement;
 using Emignatik.NxFileViewer.Settings;
 using Emignatik.NxFileViewer.Styling.Theme;
 using Emignatik.NxFileViewer.Tools;
@@ -84,6 +85,8 @@ public partial class App : Application, IAppEvents
             .AddSingleton<IItemViewModelBuilder, ItemViewModelBuilder>()
             .AddSingleton<IFileLoader, FileLoader>()
             .AddSingleton<IBrushesProvider, BrushesProvider>()
+            .AddSingleton<IThemeService, ThemeService>()
+            .AddSingleton<IWindowPlacementService, WindowPlacementService>()
             .AddSingleton<ILocalizationFromSettingsSynchronizerService, LocalizationFromSettingsSynchronizerService>()
             .AddSingleton<IShallowCopier, ShallowCopier>()
             .AddSingleton<INcaHashService, NcaHashService>()
@@ -127,6 +130,9 @@ public partial class App : Application, IAppEvents
         // Initialize localization
         ServiceProvider.GetRequiredService<ILocalizationFromSettingsSynchronizerService>().Initialize();
 
+        // Applies the light/dark theme before any window is shown
+        ServiceProvider.GetRequiredService<IThemeService>().Initialize();
+
         LocalizationStringExtension.FormatException += OnLocalizationStringFormatException;
 
         var mainWindowViewModel = ServiceProvider.GetRequiredService<MainWindowViewModel>();
@@ -135,6 +141,10 @@ public partial class App : Application, IAppEvents
             DataContext = mainWindowViewModel
         };
         mainWindowViewModel.Window = mainWindow;
+
+        // Themed title bar + restores the last window position/size on a visible monitor
+        ServiceProvider.GetRequiredService<IThemeService>().RegisterWindow(mainWindow);
+        ServiceProvider.GetRequiredService<IWindowPlacementService>().Track(mainWindow);
 
         void MainWindowLoaded(object sender, RoutedEventArgs args)
         {

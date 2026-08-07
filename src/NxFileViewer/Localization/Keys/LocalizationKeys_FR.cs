@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emignatik.NxFileViewer.Utils.MVVM.Localization;
 using LibHac.Ncm;
 
@@ -96,6 +96,7 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string SettingsView_CheckBox_AlwaysReloadKeysBeforeOpen => "Toujours recharger les clés avant l'ouverture d'un fichier";
     public string SettingsView_CheckBox_InjectTicketKeys => "Injecter les clés depuis les fichiers ticket (*.tik)";
     public string SettingsView_Title_Language => "Langue";
+    public string SettingsView_Title_Theme => "Thème";
     public string SettingsView_Title_NczOptions => "Paramètres NSZ/XCZ";
     public string SettingsView_ToolTip_NczBlockLessCompression => """
                                                                   Les fichiers NSZ ou XCZ sont composés de fichiers NCZ qui sont des fichiers NCA compressés.

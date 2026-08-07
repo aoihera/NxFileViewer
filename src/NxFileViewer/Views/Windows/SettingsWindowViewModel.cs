@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -9,6 +9,7 @@ using Emignatik.NxFileViewer.Services.BackgroundTask;
 using Emignatik.NxFileViewer.Services.BackgroundTask.RunnableImpl;
 using Emignatik.NxFileViewer.Services.FileLocationOpening;
 using Emignatik.NxFileViewer.Services.KeysManagement;
+using Emignatik.NxFileViewer.Styling.Theme;
 using Emignatik.NxFileViewer.Settings;
 using Emignatik.NxFileViewer.Utils.MVVM;
 using Emignatik.NxFileViewer.Utils.MVVM.Commands;
@@ -101,6 +102,13 @@ public class SettingsWindowViewModel : WindowViewModelBase
 
 
     public IEnumerable<LogLevel> LogLevels => Enum.GetValues<LogLevel>();
+
+    public IEnumerable<ThemeOption> ThemeOptions { get; } = new[]
+    {
+        new ThemeOption(AppTheme.System, "Auto"),
+        new ThemeOption(AppTheme.Light, "Light"),
+        new ThemeOption(AppTheme.Dark, "Dark"),
+    };
 
     public string ActualProdKeysFilePath => _keySetProviderService.ActualProdKeysFilePath ?? LocalizationManager.Instance.Current.Keys.NoneKeysFile;
 
@@ -248,3 +256,5 @@ public class SettingsWindowViewModel : WindowViewModelBase
         InitializeFromSettings(_appSettingsManager.GetDefault());
     }
 }
+
+public sealed record ThemeOption(AppTheme Value, string DisplayName);

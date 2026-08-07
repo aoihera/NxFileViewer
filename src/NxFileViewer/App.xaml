@@ -1,4 +1,4 @@
-﻿<Application x:Class="Emignatik.NxFileViewer.App"
+<Application x:Class="Emignatik.NxFileViewer.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mvvmConverters="clr-namespace:Emignatik.NxFileViewer.Views.Converters"
@@ -82,7 +82,12 @@
             <converters:NullOrEmptyStringToVisibilityConverter x:Key="StringNullOrEmptyToCollapsedVisibilityConverter" />
 
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Styling/Theme/DefaultTheme.xaml" />
+                <!-- Theme independent resources -->
+                <ResourceDictionary Source="Styling/Theme/Shared.xaml" />
+                <!-- Theme dictionary, swapped at runtime by the ThemeService (see ThemeService.ApplyTheme) -->
+                <ResourceDictionary Source="Styling/Theme/LightTheme.xaml" />
+                <!-- Theme aware styles of the standard controls -->
+                <ResourceDictionary Source="Styling/CommonControlsStyle.xaml" />
 
                 <ResourceDictionary Source="Styling/TextBoxStyle.xaml" />
                 <ResourceDictionary Source="Styling/TextBlockStyle.xaml" />

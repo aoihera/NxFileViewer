@@ -1,4 +1,4 @@
-﻿using Emignatik.NxFileViewer.Utils.MVVM.Localization;
+using Emignatik.NxFileViewer.Utils.MVVM.Localization;
 
 // ReSharper disable InconsistentNaming
 
@@ -64,6 +64,7 @@ public interface ILocalizationKeys : ILocalizationKeysBase
     string SettingsView_CheckBox_AlwaysReloadKeysBeforeOpen { get; }
     string SettingsView_CheckBox_InjectTicketKeys { get; }
     string SettingsView_Title_Language { get; }
+    string SettingsView_Title_Theme { get; }
 
     string SettingsView_Title_NczOptions { get; }
     string SettingsView_ToolTip_NczBlockLessCompression { get; }

@@ -1,4 +1,4 @@
-﻿<Window x:Class="Emignatik.NxFileViewer.Views.Windows.MainWindow"
+<Window x:Class="Emignatik.NxFileViewer.Views.Windows.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,7 +11,7 @@
         mc:Ignorable="d"
         AllowDrop="True"
         Style="{StaticResource WindowStyle}"
-        Title="{Binding Path=Title}" Height="704" Width="470" d:DataContext="{d:DesignInstance windows:MainWindowViewModel}"
+        Title="{Binding Path=Title}" Height="704" Width="470" MinHeight="300" MinWidth="360" WindowStartupLocation="CenterScreen" d:DataContext="{d:DesignInstance windows:MainWindowViewModel}"
         dragAndDrop:DropFilesBehaviorExtension.IsEnabled="True">
 
     <Window.InputBindings>
@@ -102,9 +102,9 @@
         <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Style="{StaticResource WatermarkText}" Text="{Binding Source={x:Static loc:LocalizationManager.Instance}, Path=Current.Keys.DragMeAFile}" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Visibility="{Binding Path=NoProdKeysLoaded, Converter={StaticResource FalseToCollapseVisibilityConverter}}">
-                <TextBlock Foreground="{StaticResource FontBrush.Warning}">⚠</TextBlock>
+                <TextBlock Foreground="{DynamicResource FontBrush.Warning}">⚠</TextBlock>
                 <TextBlock  Margin="5,0,0,0">
-                    <Hyperlink Foreground="{StaticResource FontBrush.Warning}" Command="{Binding ShowSettingsWindowCommand}">
+                    <Hyperlink Foreground="{DynamicResource FontBrush.Warning}" Command="{Binding ShowSettingsWindowCommand}">
                         <TextBlock Text="{Binding Source={x:Static loc:LocalizationManager.Instance}, Path=Current.Keys.WarnNoProdKeysFileFound}" />
                     </Hyperlink>
                 </TextBlock>
