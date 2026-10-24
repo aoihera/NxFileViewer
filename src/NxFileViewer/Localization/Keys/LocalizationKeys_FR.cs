@@ -161,24 +161,6 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_SavePartitionFileItem => "Sauvegarder le fichier de partition...";
     public string ContextMenu_SaveNcaFileRaw => "Sauvegarder le NCA brute...";
     public string ContextMenu_SaveNcaFilePlaintext => "Sauvegarder le NCA déchiffré...";
-    public string ContextMenu_DumpPackageContent => "Extraire...";
-
-    public string DumpContent_SelectDirectoryTitle => "Sélectionnez le dossier dans lequel extraire le contenu";
-    public string DumpContent_SelectBasePackageTitle => "Sections de patch (mise à jour) détectées. Sélectionnez le paquet de base pour les extraire (ou annulez pour les ignorer)";
-    public string BasePackage_Found => "Paquet de base «{0}» trouvé à côté de «{1}»: il servira à lire les sections de patch.";
-    public string BasePackage_NotFound => "Aucun paquet de base trouvé à côté de «{0}»: les sections de patch du contenu de mise à jour ne peuvent pas être lues.";
-    public string BasePackage_LoadingError => "Echec de l'utilisation du paquet de base «{0}»: {1}";
-    public string BasePackage_SectionOpened => "La section {1} du NCA «{0}» est une section de patch: ouverte avec le NCA de base «{2}».";
-    public string BasePackage_SectionNotOpened => "La section {1} du NCA «{0}» est une section de patch et aucun NCA de base utilisable n'a été trouvé: son contenu ne peut pas être lu.";
-    public string DumpContent_BasePackageError => "Echec de l'utilisation du paquet de base «{0}»: {1}";
-    public string DumpContent_BasePackageUnsupported => "Le paquet de base «{0}» n'est pas d'un type pris en charge.";
-    public string DumpContent_BaseNcaUsed => "La section {1} du NCA «{0}» est une section de patch: extraite avec le NCA de base «{2}».";
-    public string DumpContent_PatchSectionSkipped => "La section {1} du NCA «{0}» est une section de patch: elle ne contient que les données modifiées par la mise à jour et nécessite le paquet de base. Section ignorée.";
-    public string DumpContent_Error => "Echec de l'extraction du contenu: {0}";
-    public string DumpContent_FileError => "Echec de l'extraction du fichier «{0}»: {1}";
-    public string DumpContent_SectionError => "Echec de l'extraction de la section {1} du NCA «{0}»: {2}";
-    public string DumpContent_NcaWithoutSection => "Aucune section trouvée dans le NCA «{0}», il n'y a rien à extraire.";
-    public string DumpContent_SectionNotOpened => "La section {1} du NCA «{0}» n'a pas pu être ouverte, son contenu ne peut pas être extrait.";
 
     public string SettingsLoadingError => "Echec du chargment des paramètres: {0}";
     public string SettingsSavingError => "Echec de sauvegarde des paramètres: {0}";
@@ -291,7 +273,6 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string NcasIntegrity_Unknown => "Inconnu";
 
     public string Status_SavingFile => "Sauvegarde du fichier «{0}»...";
-    public string Status_DumpingContent => "Extraction de «{0}» ({1}/{2})...";
 
     public string KeysLoading_Starting_Log => ">>> Chargement des clés...";
     public string KeysLoading_Successful_Log => ">>> Clés chargées avec succès.";
@@ -312,7 +293,6 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string Log_DownloadFileCanceled => "Téléchargement annulé.";
     public string Log_SaveToDirCanceled => "Sauvegarde du répertoire annulé.";
     public string Log_SaveFileCanceled => "Sauvegarde du fichier annulé.";
-    public string Log_DumpContentCanceled => "Extraction du contenu annulée.";
     public string Log_SaveStorageCanceled => "Sauvegarde du stockage annulé.";
     public string Log_NcasIntegrityCanceled => "Intégrité des NCAs annulé.";
 

@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Windows;
 using Emignatik.NxFileViewer.Commands;
 using Emignatik.NxFileViewer.FileLoading;
-using Emignatik.NxFileViewer.FileLoading.Patching;
 using Emignatik.NxFileViewer.FileLoading.QuickFileInfoLoading;
 using Emignatik.NxFileViewer.Localization;
 using Emignatik.NxFileViewer.Logging;
@@ -76,7 +75,6 @@ public partial class App : Application, IAppEvents
 
             .AddSingleton<INamingPatternsParser, NamingPatternsParser>()
             .AddSingleton<IPackageTypeAnalyzer, PackageTypeAnalyzer>()
-            .AddSingleton<IBasePackageFinder, BasePackageFinder>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<RenameToolWindowViewModel>()
             .AddSingleton<AppSettings>()
@@ -97,7 +95,6 @@ public partial class App : Application, IAppEvents
             .AddTransient<SettingsWindowViewModel>() // Important to let transient so that real actual settings are displayed when settings view is shown
             .AddTransient<ISaveFileRunnable, SaveFileRunnable>()
             .AddTransient<ISaveDirectoryRunnable, SaveDirectoryRunnable>()
-            .AddTransient<IDumpPackageContentRunnable, DumpPackageContentRunnable>()
             .AddTransient<IVerifyNcasIntegrityRunnable, VerifyNcasIntegrityRunnable>()
             .AddTransient<IDownloadFileRunnable, DownloadFileRunnable>()
             .AddTransient<ISaveStorageRunnable, SaveStorageRunnable>()
@@ -109,7 +106,6 @@ public partial class App : Application, IAppEvents
             .AddTransient<ISaveDirectoryEntryCommand, SaveDirectoryEntryCommand>()
             .AddTransient<ISavePartitionFileCommand, SavePartitionFileCommand>()
             .AddTransient<ISaveSectionContentCommand, SaveSectionContentCommand>()
-            .AddTransient<IDumpPackageContentCommand, DumpPackageContentCommand>()
             .AddTransient<ISavePlaintextNcaFileCommand, SavePlaintextNcaFileCommand>()
             .AddTransient<IFsSanitizer, FsSanitizer>()
             .AddTransient<IHttpDownloader, HttpDownloader>()

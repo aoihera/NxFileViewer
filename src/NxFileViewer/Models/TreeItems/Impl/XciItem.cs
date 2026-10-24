@@ -36,8 +36,6 @@ public class XciItem : ItemBase
 
     public override void Dispose()
     {
-        DisposeAttachedDisposables();
-
         _storage.Dispose();
     }
 

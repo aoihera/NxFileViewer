@@ -40,27 +40,6 @@ public class PromptService : IPromptService
         return dirPath;
     }
 
-    public string? PromptOpenFile(string title, string? filter = null)
-    {
-        var openFileDialog = new OpenFileDialog
-        {
-            InitialDirectory = _appSettings.LastUsedDir,
-            Title = title,
-            CheckFileExists = true,
-            Multiselect = false,
-            Filter = filter ?? LocalizationManager.Instance.Current.Keys.SaveDialog_AnyFileFilter + " (*.*)|*.*"
-        };
-
-        if (openFileDialog.ShowDialog() != true)
-            return null;
-
-        var filePath = openFileDialog.FileName;
-
-        _appSettings.LastUsedDir = Path.GetDirectoryName(filePath)!;
-
-        return filePath;
-    }
-
     public string? PromptSaveFile(string defaultFileName, string? title = null, string? filter = null)
     {
         title ??= LocalizationManager.Instance.Current.Keys.SaveDialog_Title;

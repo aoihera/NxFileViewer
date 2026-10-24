@@ -121,25 +121,6 @@ public interface ILocalizationKeys : ILocalizationKeysBase
     string ContextMenu_SaveNcaFileRaw { get; }
     string ContextMenu_SaveNcaFilePlaintext { get; }
 
-    string ContextMenu_DumpPackageContent { get; }
-
-    string DumpContent_SelectDirectoryTitle { get; }
-    string DumpContent_SelectBasePackageTitle { get; }
-    string BasePackage_Found { get; }
-    string BasePackage_NotFound { get; }
-    string BasePackage_LoadingError { get; }
-    string BasePackage_SectionOpened { get; }
-    string BasePackage_SectionNotOpened { get; }
-    string DumpContent_BasePackageError { get; }
-    string DumpContent_BasePackageUnsupported { get; }
-    string DumpContent_BaseNcaUsed { get; }
-    string DumpContent_PatchSectionSkipped { get; }
-    string DumpContent_Error { get; }
-    string DumpContent_FileError { get; }
-    string DumpContent_SectionError { get; }
-    string DumpContent_NcaWithoutSection { get; }
-    string DumpContent_SectionNotOpened { get; }
-
     string SettingsLoadingError { get; }
     string SettingsSavingError { get; }
 
@@ -238,7 +219,6 @@ public interface ILocalizationKeys : ILocalizationKeysBase
     string NcasIntegrity_Unknown { get; }
 
     string Status_SavingFile { get; }
-    string Status_DumpingContent { get; }
 
     string KeysLoading_Starting_Log { get; }
     string KeysLoading_Successful_Log { get; }
@@ -260,7 +240,6 @@ public interface ILocalizationKeys : ILocalizationKeysBase
     string Log_DownloadFileCanceled { get; }
     string Log_SaveToDirCanceled { get; }
     string Log_SaveFileCanceled { get; }
-    string Log_DumpContentCanceled { get; }
     string Log_SaveStorageCanceled { get; }
     string Log_NcasIntegrityCanceled { get; }
 

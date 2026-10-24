@@ -161,24 +161,6 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_SavePartitionFileItem => "Partitionsdatei speichern...";
     public string ContextMenu_SaveNcaFileRaw => "NCA RAW speichern...";
     public string ContextMenu_SaveNcaFilePlaintext => "NCA Klartext speichern...";
-    public string ContextMenu_DumpPackageContent => "Ausgeben...";
-
-    public string DumpContent_SelectDirectoryTitle => "Ordner auswählen, in den der Inhalt ausgegeben werden soll";
-    public string DumpContent_SelectBasePackageTitle => "Patch-Abschnitte (Update) gefunden. Wähle das Basispaket zum Ausgeben (oder abbrechen, um sie zu überspringen)";
-    public string BasePackage_Found => "Basispaket «{0}» neben «{1}» gefunden: es wird zum Lesen der Patch-Abschnitte verwendet.";
-    public string BasePackage_NotFound => "Kein Basispaket neben «{0}» gefunden: Patch-Abschnitte von Update-Inhalten können nicht gelesen werden.";
-    public string BasePackage_LoadingError => "Fehler bei der Verwendung des Basispakets «{0}»: {1}";
-    public string BasePackage_SectionOpened => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt: mit Basis-NCA «{2}» geöffnet.";
-    public string BasePackage_SectionNotOpened => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt und es wurde kein passendes Basis-NCA gefunden: der Inhalt kann nicht gelesen werden.";
-    public string DumpContent_BasePackageError => "Fehler bei der Verwendung des Basispakets «{0}»: {1}";
-    public string DumpContent_BasePackageUnsupported => "Basispaket «{0}» hat keinen unterstützten Pakettyp.";
-    public string DumpContent_BaseNcaUsed => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt: mit Basispaket «{2}» ausgegeben.";
-    public string DumpContent_PatchSectionSkipped => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt: er enthält nur die vom Update geänderten Daten und benötigt das Basispaket. Abschnitt übersprungen.";
-    public string DumpContent_Error => "Fehler beim Ausgeben des Inhalts: {0}";
-    public string DumpContent_FileError => "Fehler beim Ausgeben der Datei «{0}»: {1}";
-    public string DumpContent_SectionError => "Fehler beim Ausgeben von Abschnitt {1} aus dem NCA «{0}»: {2}";
-    public string DumpContent_NcaWithoutSection => "Kein Abschnitt im NCA «{0}» gefunden, es gibt nichts auszugeben.";
-    public string DumpContent_SectionNotOpened => "Abschnitt {1} des NCA «{0}» konnte nicht geöffnet werden, sein Inhalt kann nicht ausgegeben werden.";
 
     public string SettingsLoadingError => "Einstellungen konnten nicht geladen werden: {0}";
     public string SettingsSavingError => "Einstellungen konnten nicht gespeichert werden: {0}";
@@ -291,7 +273,6 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string NcasIntegrity_Unknown => "Unbekannt";
 
     public string Status_SavingFile => "Speichere Datei «{0}»...";
-    public string Status_DumpingContent => "Gebe «{0}» aus ({1}/{2})...";
 
     public string KeysLoading_Starting_Log => ">>> Lade Keys...";
     public string KeysLoading_Successful_Log => ">>> Keys erfolgreich geladen.";
@@ -312,7 +293,6 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string Log_DownloadFileCanceled => "Herunterladen abgebrochen.";
     public string Log_SaveToDirCanceled => "Speichern des Verzeichnisses abgebrochen.";
     public string Log_SaveFileCanceled => "Speichern der Datei abgebrochen.";
-    public string Log_DumpContentCanceled => "Ausgeben des Inhalts abgebrochen.";
     public string Log_SaveStorageCanceled => "Speicherung des Speichers abgebrochen.";
     public string Log_NcasIntegrityCanceled => "Integritätsprüfung der NCAs abgebrochen.";
 

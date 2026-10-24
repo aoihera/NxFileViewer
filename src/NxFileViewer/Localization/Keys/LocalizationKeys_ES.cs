@@ -161,24 +161,6 @@ public class LocalizationKeys_ES : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_SavePartitionFileItem => "Guardar archivo de partición...";
     public string ContextMenu_SaveNcaFileRaw => "Guardar archivo NCA sin procesar...";
     public string ContextMenu_SaveNcaFilePlaintext => "Guardar archivo NCA en texto plano...";
-    public string ContextMenu_DumpPackageContent => "Volcar...";
-
-    public string DumpContent_SelectDirectoryTitle => "Seleccione la carpeta donde volcar el contenido";
-    public string DumpContent_SelectBasePackageTitle => "Se encontraron secciones de parche (actualización). Seleccione el paquete base para volcarlas (o cancele para omitirlas)";
-    public string BasePackage_Found => "Paquete base «{0}» encontrado junto a «{1}»: se usará para leer las secciones de parche.";
-    public string BasePackage_NotFound => "No se encontró ningún paquete base junto a «{0}»: no se pueden leer las secciones de parche del contenido de actualización.";
-    public string BasePackage_LoadingError => "Error al usar el paquete base «{0}»: {1}";
-    public string BasePackage_SectionOpened => "La sección {1} del NCA «{0}» es una sección de parche: abierta con el NCA base «{2}».";
-    public string BasePackage_SectionNotOpened => "La sección {1} del NCA «{0}» es una sección de parche y no se encontró un NCA base utilizable: su contenido no se puede leer.";
-    public string DumpContent_BasePackageError => "Error al usar el paquete base «{0}»: {1}";
-    public string DumpContent_BasePackageUnsupported => "El paquete base «{0}» no es de un tipo soportado.";
-    public string DumpContent_BaseNcaUsed => "La sección {1} del NCA «{0}» es una sección de parche: volcada con el NCA base «{2}».";
-    public string DumpContent_PatchSectionSkipped => "La sección {1} del NCA «{0}» es una sección de parche: solo contiene los datos modificados por la actualización y necesita el paquete base para volcarse. Sección omitida.";
-    public string DumpContent_Error => "Error al volcar el contenido: {0}";
-    public string DumpContent_FileError => "Error al volcar el archivo «{0}»: {1}";
-    public string DumpContent_SectionError => "Error al volcar la sección {1} del NCA «{0}»: {2}";
-    public string DumpContent_NcaWithoutSection => "No se encontró ninguna sección en el NCA «{0}», no hay nada que volcar.";
-    public string DumpContent_SectionNotOpened => "No se pudo abrir la sección {1} del NCA «{0}», su contenido no se puede volcar.";
 
     public string SettingsLoadingError => "Error al cargar configuraciones: {0}";
     public string SettingsSavingError => "Error al guardar configuraciones: {0}";
@@ -291,7 +273,6 @@ public class LocalizationKeys_ES : LocalizationKeysBase, ILocalizationKeys
     public string NcasIntegrity_Unknown => "Desconocido";
 
     public string Status_SavingFile => "Guardando archivo «{0}»...";
-    public string Status_DumpingContent => "Volcando «{0}» ({1}/{2})...";
 
     public string KeysLoading_Starting_Log => ">>> Cargando llaves...";
     public string KeysLoading_Successful_Log => ">>> Llaves cargadas.";
@@ -312,7 +293,6 @@ public class LocalizationKeys_ES : LocalizationKeysBase, ILocalizationKeys
     public string Log_DownloadFileCanceled => "Descarga cancelada.";
     public string Log_SaveToDirCanceled => "Guardado de directorio cancelado.";
     public string Log_SaveFileCanceled => "Guardado de archivo cancelado.";
-    public string Log_DumpContentCanceled => "Volcado del contenido cancelado.";
     public string Log_SaveStorageCanceled => "Guardado de almacenamiento cancelado.";
     public string Log_NcasIntegrityCanceled => "Verificación de Integridad de NCAs cancelada.";
 
