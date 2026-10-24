@@ -23,25 +23,30 @@ namespace Emignatik.NxFileViewer.Services.BackgroundTask.RunnableImpl;
 /// &lt;target directory&gt;/&lt;package name&gt;/
 ///     &lt;ticket&gt;.tik
 ///     &lt;certificate&gt;.cert
-///     Program/
-///         exefs/
-///             ...
-///         romfs/
-///             ...
-///     Control/
-///         romfs/
-///             control/
-///                 ...
-///     Meta/
-///         cnmt/
-///             ...
-///     Manual/
-///         romfs/
-///             ...
+///     control/
+///         control.nacp
+///         icon_AmericanEnglish.dat
+///         ...
+///     exefs/
+///         main
+///         main.npdm
+///         ...
+///     legal_information/
+///         ...
+///     logo/
+///         ...
+///     meta/
+///         Application_0100ABCD12345678.cnmt
+///         ...
+///     romfs/
+///         ...
 /// </code>
 ///
-/// Each NCA gets a directory named after its content type (Program, Control, Meta, Manual, ...), and each enabled
-/// NCA section of that NCA gets a directory named after the section content (exefs, romfs, logo, ...).
+/// Every NCA section is dumped in a flat directory named after what it contains:
+/// the Program NCA sections give «exefs» (code), «romfs» (data) and «logo» (logo), the Control NCA gives «control»,
+/// the Meta NCA gives «meta» and the Manual NCA gives «legal_information». Any other content type or section
+/// falls back to a lower_snake_case name derived from the content type (e.g. «data», «public_data») or to
+/// «section_&lt;index&gt;».
 /// </summary>
 public class DumpPackageContentRunnable : IDumpPackageContentRunnable
 {
@@ -50,7 +55,9 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
     private const string EXEFS_DIRECTORY_NAME = "exefs";
     private const string ROMFS_DIRECTORY_NAME = "romfs";
     private const string LOGO_DIRECTORY_NAME = "logo";
-    private const string CNMT_DIRECTORY_NAME = "cnmt";
+    private const string CONTROL_DIRECTORY_NAME = "control";
+    private const string LEGAL_INFORMATION_DIRECTORY_NAME = "legal_information";
+    private const string META_DIRECTORY_NAME = "meta";
 
     private readonly IStreamToFileHelper _streamToFileHelper;
     private readonly IFsSanitizer _fsSanitizer;
@@ -167,13 +174,12 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
     }
 
     /// <summary>
-    /// Creates one directory per NCA (named after its content type), then one directory per section of that NCA
-    /// (named after the section content: exefs, romfs, logo, ...), then plans every file of those sections.
+    /// Plans the content of every NCA section, each one being dumped in a directory of the dump root named after
+    /// what the section contains: «exefs», «romfs» and «logo» for the Program NCA, «control» for the Control NCA,
+    /// «meta» for the Meta NCA and «legal_information» for the Manual NCA.
     /// </summary>
     private void PlanNcaContent(PartitionFileSystemItemBase partitionItem, string dumpRootDirectory, List<PlannedFile> filesToDump)
     {
-        var usedNcaDirectoryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
         foreach (var ncaItem in partitionItem.NcaChildItems)
         {
             var sections = ncaItem.ChildItems;
@@ -183,15 +189,19 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
                 continue;
             }
 
-            var ncaDirectoryName = GetUniqueDirectoryName(GetNcaDirectoryName(ncaItem), GetShortId(ncaItem), usedNcaDirectoryNames);
-            var ncaDirectory = Path.Combine(dumpRootDirectory, ncaDirectoryName);
+            var contentDirectoryName = GetContentDirectoryName(ncaItem);
 
-            var usedSectionDirectoryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var sectionItem in sections)
+            for (var sectionIndex = 0; sectionIndex < sections.Length; sectionIndex++)
             {
-                var sectionDirectoryName = GetUniqueDirectoryName(GetSectionDirectoryName(sectionItem, ncaItem), $"section_{sectionItem.SectionIndex}", usedSectionDirectoryNames);
-                var sectionDirectory = Path.Combine(ncaDirectory, sectionDirectoryName);
+                var sectionItem = sections[sectionIndex];
+
+                // The Program NCA holds several sections (code, data, logo): each one is dumped in its own directory.
+                // Any other content type holds a single section, dumped in the content type directory itself.
+                var directoryName = ncaItem.ContentType == NcaContentType.Program
+                    ? GetProgramSectionDirectoryName(sectionItem)
+                    : (sectionIndex == 0 ? contentDirectoryName : $"{contentDirectoryName}_{sectionItem.SectionIndex}");
+
+                var sectionDirectory = Path.Combine(dumpRootDirectory, directoryName);
 
                 var fileSystem = sectionItem.FileSystem;
                 if (fileSystem == null)
@@ -215,6 +225,75 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
         }
     }
 
+    /// <summary>
+    /// Gets the name of the directory holding the content of the specified NCA, based on its content type:
+    /// «control» for the Control NCA, «meta» for the Meta NCA, «legal_information» for the Manual NCA, etc.
+    /// </summary>
+    private static string GetContentDirectoryName(NcaItem ncaItem)
+    {
+        switch (ncaItem.ContentType)
+        {
+            case NcaContentType.Control:
+                return CONTROL_DIRECTORY_NAME;
+
+            case NcaContentType.Meta:
+                return META_DIRECTORY_NAME;
+
+            case NcaContentType.Manual:
+                return LEGAL_INFORMATION_DIRECTORY_NAME;
+
+            default:
+                // e.g. NcaContentType.Data => «data», NcaContentType.PublicData => «public_data»
+                return ToSnakeCase(ncaItem.ContentType.ToString());
+        }
+    }
+
+    /// <summary>
+    /// Gets the name of the directory holding the specified Program NCA section: the code section holds the «exefs»
+    /// content, the data section holds the «romfs» content and the logo section holds the «logo» content.
+    /// </summary>
+    private static string GetProgramSectionDirectoryName(SectionItem sectionItem)
+    {
+        switch (sectionItem.NcaSectionType)
+        {
+            case NcaSectionType.Code:
+                return EXEFS_DIRECTORY_NAME;
+
+            case NcaSectionType.Data:
+                return ROMFS_DIRECTORY_NAME;
+
+            case NcaSectionType.Logo:
+                return LOGO_DIRECTORY_NAME;
+
+            default:
+                return $"section_{sectionItem.SectionIndex}";
+        }
+    }
+
+    private static string ToSnakeCase(string value)
+    {
+        var snakeCase = new System.Text.StringBuilder(value.Length + 4);
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+
+            if (char.IsUpper(c))
+            {
+                if (i > 0 && (!char.IsUpper(value[i - 1]) || (i + 1 < value.Length && !char.IsUpper(value[i + 1]))))
+                    snakeCase.Append('_');
+
+                snakeCase.Append(char.ToLowerInvariant(c));
+            }
+            else
+            {
+                snakeCase.Append(c);
+            }
+        }
+
+        return snakeCase.ToString();
+    }
+
     private void PlanDirectory(IFileSystem fileSystem, string srcDirectoryPath, string dstDirectoryPath, List<PlannedFile> filesToDump)
     {
         foreach (var directoryEntry in fileSystem.EnumerateEntries(srcDirectoryPath, "*", SearchOptions.Default))
@@ -233,62 +312,6 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
                 filesToDump.Add(PlannedFile.FromFileSystemEntry(fileSystem, directoryEntry.FullPath, dstPath));
             }
         }
-    }
-
-    /// <summary>
-    /// Gets the name of the directory dedicated to the specified NCA, based on its content type
-    /// (Program, Control, Meta, Manual, Data, ...).
-    /// </summary>
-    private static string GetNcaDirectoryName(NcaItem ncaItem)
-    {
-        var contentType = ncaItem.ContentType;
-        return Enum.IsDefined(typeof(NcaContentType), contentType)
-            ? contentType.ToString()
-            : GetShortId(ncaItem);
-    }
-
-    /// <summary>
-    /// Gets the name of the directory dedicated to the specified NCA section, based on the section content:
-    /// a code section holds the «exefs» content, a data section holds the «romfs» content.
-    /// </summary>
-    private static string GetSectionDirectoryName(SectionItem sectionItem, NcaItem ncaItem)
-    {
-        switch (sectionItem.NcaSectionType)
-        {
-            case NcaSectionType.Code:
-                return EXEFS_DIRECTORY_NAME;
-
-            case NcaSectionType.Data:
-                return ROMFS_DIRECTORY_NAME;
-
-            case NcaSectionType.Logo:
-                return LOGO_DIRECTORY_NAME;
-
-            default:
-                // The meta NCA section holds the CNMT metadata file
-                return ncaItem.ContentType == NcaContentType.Meta
-                    ? CNMT_DIRECTORY_NAME
-                    : $"section_{sectionItem.SectionIndex}";
-        }
-    }
-
-    private static string GetShortId(NcaItem ncaItem)
-    {
-        var id = ncaItem.Id;
-        return id.Length > 8 ? id[..8] : id;
-    }
-
-    private static string GetUniqueDirectoryName(string directoryName, string disambiguationSuffix, HashSet<string> usedDirectoryNames)
-    {
-        if (usedDirectoryNames.Add(directoryName))
-            return directoryName;
-
-        var uniqueDirectoryName = $"{directoryName}_{disambiguationSuffix}";
-        var index = 2;
-        while (!usedDirectoryNames.Add(uniqueDirectoryName))
-            uniqueDirectoryName = $"{directoryName}_{disambiguationSuffix}_{index++}";
-
-        return uniqueDirectoryName;
     }
 
     /// <summary>
