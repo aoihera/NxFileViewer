@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows.Input;
 using Emignatik.NxFileViewer.Localization;
 using Emignatik.NxFileViewer.Models.TreeItems.Impl;
@@ -44,24 +45,45 @@ public class DumpPackageContentCommand : CommandBase, IDumpPackageContentCommand
 
     public override async void Execute(object? parameter)
     {
-        if (_partitionItem == null)
+        var partitionItem = _partitionItem;
+        if (partitionItem == null)
             return;
 
-        var selectedDir = _promptService.PromptSelectDir(LocalizationManager.Instance.Current.Keys.DumpContent_SelectDirectoryTitle);
+        var keys = LocalizationManager.Instance.Current.Keys;
+
+        var selectedDir = _promptService.PromptSelectDir(keys.DumpContent_SelectDirectoryTitle);
         if (selectedDir == null)
             return;
+
+        string? basePackageFilePath = null;
+        if (HasUnresolvedPatchSections(partitionItem))
+        {
+            // Patch (BKTR) sections only hold the data modified by an update: the base package is needed to dump them.
+            // The user can cancel the prompt to dump everything but those sections.
+            basePackageFilePath = _promptService.PromptOpenFile(keys.DumpContent_SelectBasePackageTitle, keys.OpenFile_Filter);
+        }
 
         try
         {
             var runnable = _serviceProvider.GetRequiredService<IDumpPackageContentRunnable>();
-            runnable.Setup(_partitionItem, selectedDir);
+            runnable.Setup(partitionItem, selectedDir, basePackageFilePath);
 
             await _backgroundTaskRunnerService.RunAsync(runnable);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, LocalizationManager.Instance.Current.Keys.DumpContent_Error.SafeFormat(ex.Message));
+            _logger.LogError(ex, keys.DumpContent_Error.SafeFormat(ex.Message));
         }
+    }
+
+    /// <summary>
+    /// Tells if the specified partition holds patch (BKTR) sections which can't be read without the base package.
+    /// </summary>
+    private static bool HasUnresolvedPatchSections(PartitionFileSystemItemBase partitionItem)
+    {
+        return partitionItem.NcaChildItems
+            .SelectMany(ncaItem => ncaItem.ChildItems)
+            .Any(sectionItem => sectionItem.FileSystem == null && sectionItem.SectionType.HasFlag(SectionType.Patch));
     }
 
     public override bool CanExecute(object? parameter)

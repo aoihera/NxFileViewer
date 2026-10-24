@@ -10,6 +10,14 @@ public interface IPromptService
     string? PromptSelectDir(string title);
 
     /// <summary>
+    /// Prompts the user to select an existing file
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    string? PromptOpenFile(string title, string? filter = null);
+
+    /// <summary>
     /// Prompts the user to select a location where to save a file
     /// </summary>
     /// <param name="defaultFileName"></param>

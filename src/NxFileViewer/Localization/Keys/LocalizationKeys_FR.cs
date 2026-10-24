@@ -164,6 +164,16 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_DumpPackageContent => "Extraire...";
 
     public string DumpContent_SelectDirectoryTitle => "Sélectionnez le dossier dans lequel extraire le contenu";
+    public string DumpContent_SelectBasePackageTitle => "Sections de patch (mise à jour) détectées. Sélectionnez le paquet de base pour les extraire (ou annulez pour les ignorer)";
+    public string BasePackage_Found => "Paquet de base «{0}» trouvé à côté de «{1}»: il servira à lire les sections de patch.";
+    public string BasePackage_NotFound => "Aucun paquet de base trouvé à côté de «{0}»: les sections de patch du contenu de mise à jour ne peuvent pas être lues.";
+    public string BasePackage_LoadingError => "Echec de l'utilisation du paquet de base «{0}»: {1}";
+    public string BasePackage_SectionOpened => "La section {1} du NCA «{0}» est une section de patch: ouverte avec le NCA de base «{2}».";
+    public string BasePackage_SectionNotOpened => "La section {1} du NCA «{0}» est une section de patch et aucun NCA de base utilisable n'a été trouvé: son contenu ne peut pas être lu.";
+    public string DumpContent_BasePackageError => "Echec de l'utilisation du paquet de base «{0}»: {1}";
+    public string DumpContent_BasePackageUnsupported => "Le paquet de base «{0}» n'est pas d'un type pris en charge.";
+    public string DumpContent_BaseNcaUsed => "La section {1} du NCA «{0}» est une section de patch: extraite avec le NCA de base «{2}».";
+    public string DumpContent_PatchSectionSkipped => "La section {1} du NCA «{0}» est une section de patch: elle ne contient que les données modifiées par la mise à jour et nécessite le paquet de base. Section ignorée.";
     public string DumpContent_Error => "Echec de l'extraction du contenu: {0}";
     public string DumpContent_FileError => "Echec de l'extraction du fichier «{0}»: {1}";
     public string DumpContent_SectionError => "Echec de l'extraction de la section {1} du NCA «{0}»: {2}";

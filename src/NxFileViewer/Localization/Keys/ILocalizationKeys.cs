@@ -124,6 +124,16 @@ public interface ILocalizationKeys : ILocalizationKeysBase
     string ContextMenu_DumpPackageContent { get; }
 
     string DumpContent_SelectDirectoryTitle { get; }
+    string DumpContent_SelectBasePackageTitle { get; }
+    string BasePackage_Found { get; }
+    string BasePackage_NotFound { get; }
+    string BasePackage_LoadingError { get; }
+    string BasePackage_SectionOpened { get; }
+    string BasePackage_SectionNotOpened { get; }
+    string DumpContent_BasePackageError { get; }
+    string DumpContent_BasePackageUnsupported { get; }
+    string DumpContent_BaseNcaUsed { get; }
+    string DumpContent_PatchSectionSkipped { get; }
     string DumpContent_Error { get; }
     string DumpContent_FileError { get; }
     string DumpContent_SectionError { get; }

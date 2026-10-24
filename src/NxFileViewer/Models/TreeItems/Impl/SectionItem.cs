@@ -61,6 +61,13 @@ public class SectionItem : ItemBase
     /// </summary>
     public IFileSystem? FileSystem { get; internal set; }
 
+    /// <summary>
+    /// Name of the base NCA used to open this section, or null when the section was opened without any base NCA.
+    /// A patch (BKTR) section only holds the data modified by an update: it can only be read by combining it with
+    /// the base NCA of the base package, so this property tells which one was used.
+    /// </summary>
+    public string? OpenedWithBaseNcaName { get; internal set; }
+
     public override void Dispose()
     {
         FileSystem?.Dispose();

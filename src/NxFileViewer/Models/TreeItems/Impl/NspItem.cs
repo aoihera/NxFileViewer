@@ -35,6 +35,8 @@ public class NspItem : PartitionFileSystemItemBase
 
     public override void Dispose()
     {
+        DisposeAttachedDisposables();
+
         _nspPartitionFileSystem.Dispose();
         _storage.Dispose();
     }

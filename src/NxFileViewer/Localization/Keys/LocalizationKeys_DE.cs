@@ -164,6 +164,16 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_DumpPackageContent => "Ausgeben...";
 
     public string DumpContent_SelectDirectoryTitle => "Ordner auswählen, in den der Inhalt ausgegeben werden soll";
+    public string DumpContent_SelectBasePackageTitle => "Patch-Abschnitte (Update) gefunden. Wähle das Basispaket zum Ausgeben (oder abbrechen, um sie zu überspringen)";
+    public string BasePackage_Found => "Basispaket «{0}» neben «{1}» gefunden: es wird zum Lesen der Patch-Abschnitte verwendet.";
+    public string BasePackage_NotFound => "Kein Basispaket neben «{0}» gefunden: Patch-Abschnitte von Update-Inhalten können nicht gelesen werden.";
+    public string BasePackage_LoadingError => "Fehler bei der Verwendung des Basispakets «{0}»: {1}";
+    public string BasePackage_SectionOpened => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt: mit Basis-NCA «{2}» geöffnet.";
+    public string BasePackage_SectionNotOpened => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt und es wurde kein passendes Basis-NCA gefunden: der Inhalt kann nicht gelesen werden.";
+    public string DumpContent_BasePackageError => "Fehler bei der Verwendung des Basispakets «{0}»: {1}";
+    public string DumpContent_BasePackageUnsupported => "Basispaket «{0}» hat keinen unterstützten Pakettyp.";
+    public string DumpContent_BaseNcaUsed => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt: mit Basispaket «{2}» ausgegeben.";
+    public string DumpContent_PatchSectionSkipped => "Abschnitt {1} des NCA «{0}» ist ein Patch-Abschnitt: er enthält nur die vom Update geänderten Daten und benötigt das Basispaket. Abschnitt übersprungen.";
     public string DumpContent_Error => "Fehler beim Ausgeben des Inhalts: {0}";
     public string DumpContent_FileError => "Fehler beim Ausgeben der Datei «{0}»: {1}";
     public string DumpContent_SectionError => "Fehler beim Ausgeben von Abschnitt {1} aus dem NCA «{0}»: {2}";

@@ -164,6 +164,16 @@ public class LocalizationKeys_ES : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_DumpPackageContent => "Volcar...";
 
     public string DumpContent_SelectDirectoryTitle => "Seleccione la carpeta donde volcar el contenido";
+    public string DumpContent_SelectBasePackageTitle => "Se encontraron secciones de parche (actualización). Seleccione el paquete base para volcarlas (o cancele para omitirlas)";
+    public string BasePackage_Found => "Paquete base «{0}» encontrado junto a «{1}»: se usará para leer las secciones de parche.";
+    public string BasePackage_NotFound => "No se encontró ningún paquete base junto a «{0}»: no se pueden leer las secciones de parche del contenido de actualización.";
+    public string BasePackage_LoadingError => "Error al usar el paquete base «{0}»: {1}";
+    public string BasePackage_SectionOpened => "La sección {1} del NCA «{0}» es una sección de parche: abierta con el NCA base «{2}».";
+    public string BasePackage_SectionNotOpened => "La sección {1} del NCA «{0}» es una sección de parche y no se encontró un NCA base utilizable: su contenido no se puede leer.";
+    public string DumpContent_BasePackageError => "Error al usar el paquete base «{0}»: {1}";
+    public string DumpContent_BasePackageUnsupported => "El paquete base «{0}» no es de un tipo soportado.";
+    public string DumpContent_BaseNcaUsed => "La sección {1} del NCA «{0}» es una sección de parche: volcada con el NCA base «{2}».";
+    public string DumpContent_PatchSectionSkipped => "La sección {1} del NCA «{0}» es una sección de parche: solo contiene los datos modificados por la actualización y necesita el paquete base para volcarse. Sección omitida.";
     public string DumpContent_Error => "Error al volcar el contenido: {0}";
     public string DumpContent_FileError => "Error al volcar el archivo «{0}»: {1}";
     public string DumpContent_SectionError => "Error al volcar la sección {1} del NCA «{0}»: {2}";

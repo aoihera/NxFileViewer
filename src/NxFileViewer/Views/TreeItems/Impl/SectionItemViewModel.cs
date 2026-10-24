@@ -52,6 +52,9 @@ public sealed class SectionItemViewModel : ItemViewModel
     public bool IsSparse => _sectionItem.SparseInfo != null;
 
     [PropertyView(HideIfNull = true)]
+    public string? OpenedWithBaseNca => _sectionItem.OpenedWithBaseNcaName;
+
+    [PropertyView(HideIfNull = true)]
     public ushort? SparseGeneration => _sectionItem.SparseInfo?.Generation;
 
     [PropertyView(HideIfNull = true)]

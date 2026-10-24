@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Emignatik.NxFileViewer.FileLoading;
 using Emignatik.NxFileViewer.Localization;
+using Emignatik.NxFileViewer.Models.TreeItems;
 using Emignatik.NxFileViewer.Models.TreeItems.Impl;
 using Emignatik.NxFileViewer.Tools;
 using LibHac.Common;
@@ -61,15 +63,28 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
 
     private readonly IStreamToFileHelper _streamToFileHelper;
     private readonly IFsSanitizer _fsSanitizer;
+    private readonly IFileItemLoader _fileItemLoader;
+    private readonly IPackageTypeAnalyzer _packageTypeAnalyzer;
     private readonly ILogger _logger;
 
     private PartitionFileSystemItemBase? _partitionItem;
     private string? _targetDirectory;
+    private string? _basePackageFilePath;
 
-    public DumpPackageContentRunnable(IStreamToFileHelper streamToFileHelper, IFsSanitizer fsSanitizer, ILoggerFactory loggerFactory)
+    private bool _basePackageLoadingAttempted;
+    private IItem? _basePackageItem;
+
+    /// <summary>
+    /// File systems built by <see cref="TryOpenPatchedSectionFileSystem"/>, which are not owned by any item and must be disposed.
+    /// </summary>
+    private readonly List<IFileSystem> _ownedFileSystems = new();
+
+    public DumpPackageContentRunnable(IStreamToFileHelper streamToFileHelper, IFsSanitizer fsSanitizer, IFileItemLoader fileItemLoader, IPackageTypeAnalyzer packageTypeAnalyzer, ILoggerFactory loggerFactory)
     {
         _streamToFileHelper = streamToFileHelper ?? throw new ArgumentNullException(nameof(streamToFileHelper));
         _fsSanitizer = fsSanitizer ?? throw new ArgumentNullException(nameof(fsSanitizer));
+        _fileItemLoader = fileItemLoader ?? throw new ArgumentNullException(nameof(fileItemLoader));
+        _packageTypeAnalyzer = packageTypeAnalyzer ?? throw new ArgumentNullException(nameof(packageTypeAnalyzer));
         _logger = (loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory))).CreateLogger(this.GetType());
     }
 
@@ -77,10 +92,14 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
 
     public bool SupportProgress => true;
 
-    public void Setup(PartitionFileSystemItemBase partitionItem, string targetDirectory)
+    public void Setup(PartitionFileSystemItemBase partitionItem, string targetDirectory, string? basePackageFilePath = null)
     {
         _partitionItem = partitionItem ?? throw new ArgumentNullException(nameof(partitionItem));
         _targetDirectory = targetDirectory ?? throw new ArgumentNullException(nameof(targetDirectory));
+        _basePackageFilePath = basePackageFilePath;
+        _basePackageLoadingAttempted = false;
+        _basePackageItem = null;
+        _ownedFileSystems.Clear();
     }
 
     public void Run(IProgressReporter progressReporter, CancellationToken cancellationToken)
@@ -123,6 +142,25 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
         catch (OperationCanceledException)
         {
             _logger.LogWarning(LocalizationManager.Instance.Current.Keys.Log_DumpContentCanceled);
+        }
+        finally
+        {
+            foreach (var ownedFileSystem in _ownedFileSystems)
+            {
+                try
+                {
+                    ownedFileSystem.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Failed to dispose a file system built from a base NCA.");
+                }
+            }
+
+            _ownedFileSystems.Clear();
+
+            _basePackageItem?.Dispose();
+            _basePackageItem = null;
         }
     }
 
@@ -203,10 +241,23 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
 
                 var sectionDirectory = Path.Combine(dumpRootDirectory, directoryName);
 
-                var fileSystem = sectionItem.FileSystem;
+                IFileSystem? fileSystem = sectionItem.FileSystem;
+
+                if (fileSystem == null && sectionItem.SectionType.HasFlag(SectionType.Patch))
+                {
+                    // A patch (BKTR) section only holds the data modified by an update: it can only be read by combining
+                    // it with its base NCA, which is either part of the same package or of a separate base package.
+                    fileSystem = TryOpenPatchedSectionFileSystem(partitionItem, ncaItem, sectionItem, out var baseNcaName);
+                    if (fileSystem == null)
+                        _logger.LogWarning(LocalizationManager.Instance.Current.Keys.DumpContent_PatchSectionSkipped.SafeFormat(ncaItem.Name, sectionItem.SectionIndex));
+                    else
+                        _logger.LogInformation(LocalizationManager.Instance.Current.Keys.DumpContent_BaseNcaUsed.SafeFormat(ncaItem.Name, sectionItem.SectionIndex, baseNcaName));
+                }
+
                 if (fileSystem == null)
                 {
-                    _logger.LogWarning(LocalizationManager.Instance.Current.Keys.DumpContent_SectionNotOpened.SafeFormat(ncaItem.Name, sectionItem.SectionIndex));
+                    if (!sectionItem.SectionType.HasFlag(SectionType.Patch))
+                        _logger.LogWarning(LocalizationManager.Instance.Current.Keys.DumpContent_SectionNotOpened.SafeFormat(ncaItem.Name, sectionItem.SectionIndex));
                     continue;
                 }
 
@@ -294,6 +345,103 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
         return snakeCase.ToString();
     }
 
+    /// <summary>
+    /// Tries to open the file system of a patch (BKTR) section by combining it with its base NCA.
+    /// The base NCA is searched in the current package first (a package can hold both the base and the update content),
+    /// then, if any, in the base package file selected by the user.
+    /// </summary>
+    /// <returns>The file system rebuilt from the base NCA and the patch section, or null if no usable base NCA was found.</returns>
+    private IFileSystem? TryOpenPatchedSectionFileSystem(PartitionFileSystemItemBase partitionItem, NcaItem patchNcaItem, SectionItem sectionItem, out string? baseNcaName)
+    {
+        baseNcaName = null;
+
+        var sectionIndex = sectionItem.SectionIndex;
+
+        var baseNcaItems = new List<NcaItem>(partitionItem.NcaChildItems);
+
+        var basePackageItem = GetOrLoadBasePackageItem();
+        if (basePackageItem != null)
+            baseNcaItems.AddRange(basePackageItem.FindChildrenOfType<NcaItem>(includeItem: true));
+
+        foreach (var baseNcaItem in baseNcaItems)
+        {
+            if (ReferenceEquals(baseNcaItem, patchNcaItem))
+                continue;
+
+            // The base NCA holds the same content as the patch NCA (a Program patch section is applied on a Program NCA)
+            if (baseNcaItem.ContentType != patchNcaItem.ContentType)
+                continue;
+
+            try
+            {
+                var baseNca = baseNcaItem.Nca;
+
+                if (!baseNca.Header.IsSectionEnabled(sectionIndex))
+                    continue;
+
+                var baseFsHeader = baseNca.GetFsHeader(sectionIndex);
+
+                if (baseFsHeader.IsPatchSection())
+                    continue; // This candidate is itself a patch NCA
+
+                if (baseFsHeader.ExistsSparseLayer())
+                    continue; // Sparse NCAs are update content too, they can't act as a base
+
+                var fileSystem = baseNca.OpenFileSystemWithPatch(patchNcaItem.Nca, sectionIndex, IntegrityCheckLevel.IgnoreOnInvalid);
+                _ownedFileSystems.Add(fileSystem);
+
+                baseNcaName = baseNcaItem.Name;
+                return fileSystem;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "NCA «{0}» can't be used as a base for section {1} of NCA «{2}».",
+                    baseNcaItem.Name, sectionIndex, patchNcaItem.Name);
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Loads the base package file selected by the user, once per dump.
+    /// </summary>
+    private IItem? GetOrLoadBasePackageItem()
+    {
+        if (_basePackageLoadingAttempted)
+            return _basePackageItem;
+
+        _basePackageLoadingAttempted = true;
+
+        var basePackageFilePath = _basePackageFilePath;
+        if (string.IsNullOrWhiteSpace(basePackageFilePath))
+            return null;
+
+        try
+        {
+            switch (_packageTypeAnalyzer.GetType(basePackageFilePath))
+            {
+                case PackageType.NSP:
+                    _basePackageItem = _fileItemLoader.LoadNsp(basePackageFilePath);
+                    break;
+
+                case PackageType.XCI:
+                    _basePackageItem = _fileItemLoader.LoadXci(basePackageFilePath);
+                    break;
+
+                default:
+                    _logger.LogWarning(LocalizationManager.Instance.Current.Keys.DumpContent_BasePackageUnsupported.SafeFormat(basePackageFilePath));
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, LocalizationManager.Instance.Current.Keys.DumpContent_BasePackageError.SafeFormat(basePackageFilePath, ex.Message));
+        }
+
+        return _basePackageItem;
+    }
+
     private void PlanDirectory(IFileSystem fileSystem, string srcDirectoryPath, string dstDirectoryPath, List<PlannedFile> filesToDump)
     {
         foreach (var directoryEntry in fileSystem.EnumerateEntries(srcDirectoryPath, "*", SearchOptions.Default))
@@ -362,5 +510,10 @@ public class DumpPackageContentRunnable : IDumpPackageContentRunnable
 
 public interface IDumpPackageContentRunnable : IRunnable
 {
-    void Setup(PartitionFileSystemItemBase partitionItem, string targetDirectory);
+    /// <summary>
+    /// </summary>
+    /// <param name="partitionItem">The partition to dump</param>
+    /// <param name="targetDirectory">The directory where the dump directory is created</param>
+    /// <param name="basePackageFilePath">Optional path of the base package, required to dump patch (BKTR) sections</param>
+    void Setup(PartitionFileSystemItemBase partitionItem, string targetDirectory, string? basePackageFilePath = null);
 }

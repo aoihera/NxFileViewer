@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows;
 using Emignatik.NxFileViewer.Commands;
 using Emignatik.NxFileViewer.FileLoading;
+using Emignatik.NxFileViewer.FileLoading.Patching;
 using Emignatik.NxFileViewer.FileLoading.QuickFileInfoLoading;
 using Emignatik.NxFileViewer.Localization;
 using Emignatik.NxFileViewer.Logging;
@@ -75,6 +76,7 @@ public partial class App : Application, IAppEvents
 
             .AddSingleton<INamingPatternsParser, NamingPatternsParser>()
             .AddSingleton<IPackageTypeAnalyzer, PackageTypeAnalyzer>()
+            .AddSingleton<IBasePackageFinder, BasePackageFinder>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<RenameToolWindowViewModel>()
             .AddSingleton<AppSettings>()

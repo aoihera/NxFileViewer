@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Linq;
+using Emignatik.NxFileViewer.FileLoading.Patching;
 using Emignatik.NxFileViewer.Localization;
 using Emignatik.NxFileViewer.Models.Overview;
 using Emignatik.NxFileViewer.Models.TreeItems;
@@ -31,14 +34,23 @@ namespace Emignatik.NxFileViewer.FileLoading;
 
 public class FileItemLoader : IFileItemLoader
 {
+    /// <summary>
+    /// Mask of the update (patch) bit of a title id: an update title id is «base title id | PATCH_TITLE_ID_MASK».
+    /// </summary>
+    internal const ulong PATCH_TITLE_ID_MASK = 0x800UL;
+
     private readonly IKeySetProviderService _keySetProviderService;
     private readonly IAppSettings _appSettings;
+    private readonly IPackageTypeAnalyzer _packageTypeAnalyzer;
+    private readonly IBasePackageFinder _basePackageFinder;
     private readonly ILogger _logger;
 
-    public FileItemLoader(IKeySetProviderService keySetProviderService, ILoggerFactory loggerFactory, IAppSettings appSettings)
+    public FileItemLoader(IKeySetProviderService keySetProviderService, ILoggerFactory loggerFactory, IAppSettings appSettings, IPackageTypeAnalyzer packageTypeAnalyzer, IBasePackageFinder basePackageFinder)
     {
         _keySetProviderService = keySetProviderService ?? throw new ArgumentNullException(nameof(keySetProviderService));
         _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
+        _packageTypeAnalyzer = packageTypeAnalyzer ?? throw new ArgumentNullException(nameof(packageTypeAnalyzer));
+        _basePackageFinder = basePackageFinder ?? throw new ArgumentNullException(nameof(basePackageFinder));
         _logger = (loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory))).CreateLogger(this.GetType());
     }
 
@@ -49,6 +61,7 @@ public class FileItemLoader : IFileItemLoader
         var keySet = _keySetProviderService.GetKeySet(_appSettings.AlwaysReloadKeysBeforeOpen);
         var nspItem = NspItem.FromFile(nspFilePath, keySet);
         BuildPartitionChildItems(nspItem);
+        ResolvePatchSections(nspItem, nspFilePath, keySet);
         return nspItem;
     }
 
@@ -57,6 +70,7 @@ public class FileItemLoader : IFileItemLoader
         var keySet = _keySetProviderService.GetKeySet(_appSettings.AlwaysReloadKeysBeforeOpen);
         var xciItem = XciItem.FromFile(xciFilePath, keySet);
         BuildXciChildItems(xciItem);
+        ResolvePatchSections(xciItem, xciFilePath, keySet);
         return xciItem;
     }
 
@@ -331,12 +345,24 @@ public class FileItemLoader : IFileItemLoader
                 var ncaFsPatchInfo = isPatchSection ? ncaFsHeader.GetPatchInfo() : (NcaFsPatchInfo?)null;
 
                 var sectionItem = new SectionItem(sectionIndex, ncaFsHeader, parentItem, ncaFsPatchInfo, ncaSparseInfo);
-                if (!existsSparseLayer && !isPatchSection)
+
+                // A patch section (BKTR) only holds the data modified by an update: it can't be opened without the base NCA,
+                // which LibHac needs to rebuild the complete file system. Sparse sections, on the other hand, hold all of
+                // their data and can be opened on their own.
+                if (!isPatchSection)
                 {
                     IFileSystem? fileSystem = null;
                     try
                     {
-                        fileSystem = nca.OpenFileSystem(sectionIndex, IntegrityCheckLevel.ErrorOnInvalid);
+                        try
+                        {
+                            fileSystem = nca.OpenFileSystem(sectionIndex, IntegrityCheckLevel.ErrorOnInvalid);
+                        }
+                        catch (Exception) when (existsSparseLayer)
+                        {
+                            // Sparse sections are sometimes flagged with invalid hashes by LibHac: retry without integrity check
+                            fileSystem = nca.OpenFileSystem(sectionIndex, IntegrityCheckLevel.IgnoreOnInvalid);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -534,6 +560,233 @@ public class FileItemLoader : IFileItemLoader
             parentItem.Errors.Add(Category.Loading, message);
             _logger.LogError(ex, message);
         }
+    }
+
+    /// <summary>
+    /// Second loading pass: patch (BKTR) sections can't be read on their own, because they only hold the data modified
+    /// by an update; the rest of the data belongs to the base NCA of the base package. This method tries to open every
+    /// section which is still closed by combining it with a base NCA: the one of the same package if the package holds
+    /// both the base and the update content, otherwise the one of the base package found in the same directory.
+    /// When no base NCA is found, nothing happens: the sections simply stay closed, as before.
+    /// </summary>
+    private void ResolvePatchSections(IItem rootItem, string packageFilePath, KeySet keySet)
+    {
+        try
+        {
+            var patchSectionItems = rootItem.FindChildrenOfType<SectionItem>(includeItem: true)
+                .Where(sectionItem => sectionItem.FileSystem == null && sectionItem.SectionType.HasFlag(SectionType.Patch))
+                .ToList();
+
+            if (patchSectionItems.Count == 0)
+                return;
+
+            // 1) Base NCAs of the same package: a package can hold both the base and the update content
+            TryOpenPatchSections(patchSectionItems, null);
+
+            var remainingPatchSectionItems = patchSectionItems.Where(sectionItem => sectionItem.FileSystem == null).ToList();
+            if (remainingPatchSectionItems.Count == 0)
+                return;
+
+            // 2) Base packages located in the same directory as the opened package
+            var baseTitleIds = GetBaseTitleIds(rootItem);
+
+            if (baseTitleIds.Count == 0)
+            {
+                // The metadata is not readable (missing keys, ...): fall back on the title id found in the file name
+                AddBaseTitleId(baseTitleIds, GetTitleIdFromFileName(packageFilePath));
+            }
+
+            if (baseTitleIds.Count == 0)
+            {
+                _logger.LogDebug("No base title id found for «{0}»: patch sections left closed.", packageFilePath);
+                return;
+            }
+
+            var basePackageFilePaths = _basePackageFinder.FindBasePackageCandidates(packageFilePath, baseTitleIds);
+            if (basePackageFilePaths.Count == 0)
+            {
+                _logger.LogDebug("No base package candidate next to «{0}»: patch sections left closed.", packageFilePath);
+                return;
+            }
+
+            var usedBasePackageContents = new List<PackageContent>();
+
+            foreach (var basePackageFilePath in basePackageFilePaths)
+            {
+                if (remainingPatchSectionItems.All(sectionItem => sectionItem.FileSystem != null))
+                    break;
+
+                PackageContent? basePackageContent;
+                try
+                {
+                    basePackageContent = PackageContent.Open(basePackageFilePath, _packageTypeAnalyzer.GetType(basePackageFilePath), keySet);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, LocalizationManager.Instance.Current.Keys.BasePackage_LoadingError.SafeFormat(basePackageFilePath, ex.Message));
+                    continue;
+                }
+
+                if (basePackageContent == null)
+                    continue;
+
+                if (TryOpenPatchSections(remainingPatchSectionItems, basePackageContent))
+                    usedBasePackageContents.Add(basePackageContent); // Kept alive as long as the opened file
+                else
+                    basePackageContent.Dispose();
+            }
+
+            if (usedBasePackageContents.Count > 0 && rootItem is ItemBase rootItemBase)
+            {
+                foreach (var basePackageContent in usedBasePackageContents)
+                    rootItemBase.AttachDisposable(basePackageContent);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, LocalizationManager.Instance.Current.Keys.BasePackage_LoadingError.SafeFormat(packageFilePath, ex.Message));
+        }
+    }
+
+    /// <summary>
+    /// Tries to open every specified patch section by combining it with a base NCA.
+    /// </summary>
+    /// <returns>True if at least one section could be opened.</returns>
+    private bool TryOpenPatchSections(IReadOnlyCollection<SectionItem> patchSectionItems, PackageContent? basePackageContent)
+    {
+        var hasResolvedSection = false;
+
+        foreach (var patchSectionItem in patchSectionItems)
+        {
+            if (patchSectionItem.FileSystem != null)
+                continue;
+
+            hasResolvedSection |= TryOpenPatchSectionWithBase(patchSectionItem, basePackageContent);
+        }
+
+        return hasResolvedSection;
+    }
+
+    /// <summary>
+    /// Gets the title ids of the base content referenced by the metadata of the specified package tree.
+    /// </summary>
+    private static HashSet<ulong> GetBaseTitleIds(IItem rootItem)
+    {
+        var baseTitleIds = new HashSet<ulong>();
+
+        foreach (var cnmtItem in rootItem.FindChildrenOfType<CnmtItem>(includeItem: true))
+        {
+            var cnmt = cnmtItem.Cnmt;
+
+            AddBaseTitleId(baseTitleIds, cnmt.ApplicationTitleId);
+            AddBaseTitleId(baseTitleIds, cnmt.PatchTitleId);
+            AddBaseTitleId(baseTitleIds, cnmt.TitleId);
+        }
+
+        return baseTitleIds;
+    }
+
+    /// <summary>
+    /// Extracts the title id from a package file name («Game [0100ABCD1234567800][v65536].nsp»), or returns 0.
+    /// </summary>
+    private static ulong GetTitleIdFromFileName(string packageFilePath)
+    {
+        try
+        {
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(packageFilePath);
+
+            foreach (Match match in Regex.Matches(fileName, @"[0-9a-fA-F]{16}"))
+            {
+                if (ulong.TryParse(match.Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var titleId))
+                    return titleId;
+            }
+        }
+        catch (Exception)
+        {
+            // Not relevant: the caller simply won't get any title id
+        }
+
+        return 0;
+    }
+
+    private static void AddBaseTitleId(HashSet<ulong> baseTitleIds, ulong titleId)
+    {
+        if (titleId == 0)
+            return;
+
+        // An update title id has the patch bit set: the base content is referenced without it
+        baseTitleIds.Add(titleId & ~PATCH_TITLE_ID_MASK);
+    }
+
+    /// <summary>
+    /// Tries to open the specified patch section by combining it with a compatible base NCA.
+    /// </summary>
+    /// <returns>True if the section content could be read and added to the tree.</returns>
+    private bool TryOpenPatchSectionWithBase(SectionItem patchSectionItem, PackageContent? basePackageContent)
+    {
+        var patchNcaItem = patchSectionItem.ParentItem;
+        var partitionItem = patchNcaItem.ParentItem;
+        var sectionIndex = patchSectionItem.SectionIndex;
+
+        foreach (var (baseNcaName, baseNca) in EnumerateBaseNcaCandidates(partitionItem, patchNcaItem, basePackageContent))
+        {
+            try
+            {
+                if (!baseNca.Header.IsSectionEnabled(sectionIndex))
+                    continue;
+
+                var baseFsHeader = baseNca.GetFsHeader(sectionIndex);
+
+                if (baseFsHeader.IsPatchSection())
+                    continue; // The candidate is an update NCA too, it can't act as a base
+
+                if (baseFsHeader.ExistsSparseLayer())
+                    continue; // Sparse content is update content too
+
+                var fileSystem = baseNca.OpenFileSystemWithPatch(patchNcaItem.Nca, sectionIndex, IntegrityCheckLevel.IgnoreOnInvalid);
+
+                patchSectionItem.FileSystem = fileSystem;
+                patchSectionItem.OpenedWithBaseNcaName = baseNcaName;
+
+                BuildSectionChildItems(patchSectionItem);
+
+                _logger.LogInformation(LocalizationManager.Instance.Current.Keys.BasePackage_SectionOpened
+                    .SafeFormat(patchNcaItem.Name, sectionIndex, baseNcaName));
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "NCA «{0}» can't be used as a base for section {1} of NCA «{2}».",
+                    baseNcaName, sectionIndex, patchNcaItem.Name);
+            }
+        }
+
+        _logger.LogWarning(LocalizationManager.Instance.Current.Keys.BasePackage_SectionNotOpened
+            .SafeFormat(patchNcaItem.Name, sectionIndex));
+
+        return false;
+    }
+
+    /// <summary>
+    /// Enumerates the NCAs which can be used as a base for the specified patch NCA: the NCAs of the same package first,
+    /// then the ones of the base package.
+    /// </summary>
+    private static IEnumerable<(string Name, Nca Nca)> EnumerateBaseNcaCandidates(PartitionFileSystemItemBase partitionItem, NcaItem patchNcaItem, PackageContent? basePackageContent)
+    {
+        foreach (var ncaItem in partitionItem.NcaChildItems)
+        {
+            if (ReferenceEquals(ncaItem, patchNcaItem))
+                continue;
+
+            yield return (ncaItem.Name, ncaItem.Nca);
+        }
+
+        if (basePackageContent == null)
+            yield break;
+
+        foreach (var packageNca in basePackageContent.EnumerateNcas())
+            yield return (packageNca.FileName, packageNca.Nca);
     }
 
     private void BuildDirectoryEntryChildItems(DirectoryEntryItem parentItem)

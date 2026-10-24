@@ -164,6 +164,16 @@ public class LocalizationKeys_EN : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_DumpPackageContent => "Dump...";
 
     public string DumpContent_SelectDirectoryTitle => "Select the folder where to dump the content";
+    public string DumpContent_SelectBasePackageTitle => "Patch (update) sections found. Select the base package used to dump them (or cancel to skip them)";
+    public string BasePackage_Found => "Base package «{0}» found next to «{1}»: it will be used to read patch sections.";
+    public string BasePackage_NotFound => "No base package found next to «{0}»: patch sections of update content can't be read.";
+    public string BasePackage_LoadingError => "Failed to use base package «{0}»: {1}";
+    public string BasePackage_SectionOpened => "Section {1} of NCA «{0}» is a patch section: opened using base NCA «{2}».";
+    public string BasePackage_SectionNotOpened => "Section {1} of NCA «{0}» is a patch section and no usable base NCA was found: its content can't be read.";
+    public string DumpContent_BasePackageError => "Failed to use base package «{0}»: {1}";
+    public string DumpContent_BasePackageUnsupported => "Base package «{0}» is not a supported package type.";
+    public string DumpContent_BaseNcaUsed => "Section {1} of NCA «{0}» is a patch section: dumped with base NCA «{2}».";
+    public string DumpContent_PatchSectionSkipped => "Section {1} of NCA «{0}» is a patch section: it only holds the data modified by the update and needs the base package to be dumped. Section skipped.";
     public string DumpContent_Error => "Failed to dump content: {0}";
     public string DumpContent_FileError => "Failed to dump file «{0}»: {1}";
     public string DumpContent_SectionError => "Failed to dump section {1} of NCA «{0}»: {2}";
