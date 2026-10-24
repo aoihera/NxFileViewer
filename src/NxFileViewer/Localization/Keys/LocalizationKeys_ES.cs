@@ -161,6 +161,14 @@ public class LocalizationKeys_ES : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_SavePartitionFileItem => "Guardar archivo de partición...";
     public string ContextMenu_SaveNcaFileRaw => "Guardar archivo NCA sin procesar...";
     public string ContextMenu_SaveNcaFilePlaintext => "Guardar archivo NCA en texto plano...";
+    public string ContextMenu_DumpPackageContent => "Volcar...";
+
+    public string DumpContent_SelectDirectoryTitle => "Seleccione la carpeta donde volcar el contenido";
+    public string DumpContent_Error => "Error al volcar el contenido: {0}";
+    public string DumpContent_FileError => "Error al volcar el archivo «{0}»: {1}";
+    public string DumpContent_SectionError => "Error al volcar la sección {1} del NCA «{0}»: {2}";
+    public string DumpContent_NcaWithoutSection => "No se encontró ninguna sección en el NCA «{0}», no hay nada que volcar.";
+    public string DumpContent_SectionNotOpened => "No se pudo abrir la sección {1} del NCA «{0}», su contenido no se puede volcar.";
 
     public string SettingsLoadingError => "Error al cargar configuraciones: {0}";
     public string SettingsSavingError => "Error al guardar configuraciones: {0}";
@@ -273,6 +281,7 @@ public class LocalizationKeys_ES : LocalizationKeysBase, ILocalizationKeys
     public string NcasIntegrity_Unknown => "Desconocido";
 
     public string Status_SavingFile => "Guardando archivo «{0}»...";
+    public string Status_DumpingContent => "Volcando «{0}» ({1}/{2})...";
 
     public string KeysLoading_Starting_Log => ">>> Cargando llaves...";
     public string KeysLoading_Successful_Log => ">>> Llaves cargadas.";
@@ -293,6 +302,7 @@ public class LocalizationKeys_ES : LocalizationKeysBase, ILocalizationKeys
     public string Log_DownloadFileCanceled => "Descarga cancelada.";
     public string Log_SaveToDirCanceled => "Guardado de directorio cancelado.";
     public string Log_SaveFileCanceled => "Guardado de archivo cancelado.";
+    public string Log_DumpContentCanceled => "Volcado del contenido cancelado.";
     public string Log_SaveStorageCanceled => "Guardado de almacenamiento cancelado.";
     public string Log_NcasIntegrityCanceled => "Verificación de Integridad de NCAs cancelada.";
 

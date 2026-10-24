@@ -161,6 +161,14 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_SavePartitionFileItem => "Sauvegarder le fichier de partition...";
     public string ContextMenu_SaveNcaFileRaw => "Sauvegarder le NCA brute...";
     public string ContextMenu_SaveNcaFilePlaintext => "Sauvegarder le NCA déchiffré...";
+    public string ContextMenu_DumpPackageContent => "Extraire...";
+
+    public string DumpContent_SelectDirectoryTitle => "Sélectionnez le dossier dans lequel extraire le contenu";
+    public string DumpContent_Error => "Echec de l'extraction du contenu: {0}";
+    public string DumpContent_FileError => "Echec de l'extraction du fichier «{0}»: {1}";
+    public string DumpContent_SectionError => "Echec de l'extraction de la section {1} du NCA «{0}»: {2}";
+    public string DumpContent_NcaWithoutSection => "Aucune section trouvée dans le NCA «{0}», il n'y a rien à extraire.";
+    public string DumpContent_SectionNotOpened => "La section {1} du NCA «{0}» n'a pas pu être ouverte, son contenu ne peut pas être extrait.";
 
     public string SettingsLoadingError => "Echec du chargment des paramètres: {0}";
     public string SettingsSavingError => "Echec de sauvegarde des paramètres: {0}";
@@ -273,6 +281,7 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string NcasIntegrity_Unknown => "Inconnu";
 
     public string Status_SavingFile => "Sauvegarde du fichier «{0}»...";
+    public string Status_DumpingContent => "Extraction de «{0}» ({1}/{2})...";
 
     public string KeysLoading_Starting_Log => ">>> Chargement des clés...";
     public string KeysLoading_Successful_Log => ">>> Clés chargées avec succès.";
@@ -293,6 +302,7 @@ public class LocalizationKeys_FR : LocalizationKeysBase, ILocalizationKeys
     public string Log_DownloadFileCanceled => "Téléchargement annulé.";
     public string Log_SaveToDirCanceled => "Sauvegarde du répertoire annulé.";
     public string Log_SaveFileCanceled => "Sauvegarde du fichier annulé.";
+    public string Log_DumpContentCanceled => "Extraction du contenu annulée.";
     public string Log_SaveStorageCanceled => "Sauvegarde du stockage annulé.";
     public string Log_NcasIntegrityCanceled => "Intégrité des NCAs annulé.";
 

@@ -161,6 +161,14 @@ public class LocalizationKeys_EN : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_SavePartitionFileItem => "Save partition file...";
     public string ContextMenu_SaveNcaFileRaw => "Save NCA raw...";
     public string ContextMenu_SaveNcaFilePlaintext => "Save NCA plaintext...";
+    public string ContextMenu_DumpPackageContent => "Dump...";
+
+    public string DumpContent_SelectDirectoryTitle => "Select the folder where to dump the content";
+    public string DumpContent_Error => "Failed to dump content: {0}";
+    public string DumpContent_FileError => "Failed to dump file «{0}»: {1}";
+    public string DumpContent_SectionError => "Failed to dump section {1} of NCA «{0}»: {2}";
+    public string DumpContent_NcaWithoutSection => "No section found in NCA «{0}», nothing to dump for it.";
+    public string DumpContent_SectionNotOpened => "Section {1} of NCA «{0}» could not be opened, its content cannot be dumped.";
 
     public string SettingsLoadingError => "Failed to load settings: {0}";
     public string SettingsSavingError => "Failed to save settings: {0}";
@@ -273,6 +281,7 @@ public class LocalizationKeys_EN : LocalizationKeysBase, ILocalizationKeys
     public string NcasIntegrity_Unknown => "Unknown";
 
     public string Status_SavingFile => "Saving file «{0}»...";
+    public string Status_DumpingContent => "Dumping «{0}» ({1}/{2})...";
 
     public string KeysLoading_Starting_Log => ">>> Loading Keys...";
     public string KeysLoading_Successful_Log => ">>> Keys successfully loaded.";
@@ -293,6 +302,7 @@ public class LocalizationKeys_EN : LocalizationKeysBase, ILocalizationKeys
     public string Log_DownloadFileCanceled => "Download canceled.";
     public string Log_SaveToDirCanceled => "Directory saving canceled.";
     public string Log_SaveFileCanceled => "File saving canceled.";
+    public string Log_DumpContentCanceled => "Content dumping canceled.";
     public string Log_SaveStorageCanceled => "Storage saving canceled.";
     public string Log_NcasIntegrityCanceled => "NCAs integrity canceled.";
 

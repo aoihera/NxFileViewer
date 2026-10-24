@@ -161,6 +161,14 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string ContextMenu_SavePartitionFileItem => "Partitionsdatei speichern...";
     public string ContextMenu_SaveNcaFileRaw => "NCA RAW speichern...";
     public string ContextMenu_SaveNcaFilePlaintext => "NCA Klartext speichern...";
+    public string ContextMenu_DumpPackageContent => "Ausgeben...";
+
+    public string DumpContent_SelectDirectoryTitle => "Ordner auswählen, in den der Inhalt ausgegeben werden soll";
+    public string DumpContent_Error => "Fehler beim Ausgeben des Inhalts: {0}";
+    public string DumpContent_FileError => "Fehler beim Ausgeben der Datei «{0}»: {1}";
+    public string DumpContent_SectionError => "Fehler beim Ausgeben von Abschnitt {1} aus dem NCA «{0}»: {2}";
+    public string DumpContent_NcaWithoutSection => "Kein Abschnitt im NCA «{0}» gefunden, es gibt nichts auszugeben.";
+    public string DumpContent_SectionNotOpened => "Abschnitt {1} des NCA «{0}» konnte nicht geöffnet werden, sein Inhalt kann nicht ausgegeben werden.";
 
     public string SettingsLoadingError => "Einstellungen konnten nicht geladen werden: {0}";
     public string SettingsSavingError => "Einstellungen konnten nicht gespeichert werden: {0}";
@@ -273,6 +281,7 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string NcasIntegrity_Unknown => "Unbekannt";
 
     public string Status_SavingFile => "Speichere Datei «{0}»...";
+    public string Status_DumpingContent => "Gebe «{0}» aus ({1}/{2})...";
 
     public string KeysLoading_Starting_Log => ">>> Lade Keys...";
     public string KeysLoading_Successful_Log => ">>> Keys erfolgreich geladen.";
@@ -293,6 +302,7 @@ public class LocalizationKeys_DE : LocalizationKeysBase, ILocalizationKeys
     public string Log_DownloadFileCanceled => "Herunterladen abgebrochen.";
     public string Log_SaveToDirCanceled => "Speichern des Verzeichnisses abgebrochen.";
     public string Log_SaveFileCanceled => "Speichern der Datei abgebrochen.";
+    public string Log_DumpContentCanceled => "Ausgeben des Inhalts abgebrochen.";
     public string Log_SaveStorageCanceled => "Speicherung des Speichers abgebrochen.";
     public string Log_NcasIntegrityCanceled => "Integritätsprüfung der NCAs abgebrochen.";
 
